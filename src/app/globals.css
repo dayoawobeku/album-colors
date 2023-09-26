@@ -18,14 +18,85 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
 }
 
-input {
-  color: #000;
+/* multiselect */
+
+.react-select__multi__control {
+  border-width: 0 0 0.5px 0 !important;
+  border-color: #868686 !important;
+  border-radius: initial !important;
+  width: 384px;
+}
+
+.react-select__multi__control--is-focused {
+  border-color: #101010 !important;
+  border-width: 0 0 0.5px 0 !important;
+  border-radius: initial !important;
+}
+
+.react-select__multi__value-container {
+  margin-top: 0 !important;
+  background-color: transparent !important;
+  box-shadow: unset !important;
+  padding-left: 0 !important;
+}
+
+.react-select__multi__input-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.react-select__multi__input {
+  font-weight: 500 !important;
+}
+
+.react-select__multi__input:focus {
+  outline: none !important;
+  outline-offset: unset !important;
+  box-shadow: unset !important;
+  color: #101010 !important;
+  font-weight: normal !important;
+}
+
+.react-select__multi__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 28px;
+}
+
+.react-select__multi__multi-value {
+  margin: 0 !important;
+  border-radius: 4px !important;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  line-height: 20.3px;
+  background-color: #e0e0e0 !important;
+}
+
+.react-select__multi__multi-value__label {
+  font-size: 14px !important;
+  color: #000 !important;
+  display: flex;
+  align-items: center;
+}
+
+.react-select__multi__multi-value__remove {
+  padding: 0 !important;
+  margin-right: 13px !important;
+}
+
+.react-select__multi__multi-value__remove:hover {
+  background: transparent !important;
+  color: #000 !important;
+}
+
+.react-select__multi__indicators {
+  display: none !important;
+}
+
+.react-select__multi__value-container > div:not(:last-child) {
+  margin-right: 10px !important;
 }
