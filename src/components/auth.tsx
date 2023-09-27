@@ -1,8 +1,6 @@
 'use client';
 
-import {FormEvent, useState} from 'react';
 import Image from 'next/image';
-import {useRouter} from 'next/navigation';
 import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 
 const getURL = () => {
