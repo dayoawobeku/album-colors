@@ -10,6 +10,19 @@ interface Album {
   cover_image: string;
   release_date: string;
   palettes: string[];
+  genres: string[];
+  album_url: string;
+  apple_music_url: string;
+  images?: {
+    height: number;
+    url: string;
+    width: number;
+  }[];
+  external_urls?: {
+    spotify: string;
+  };
+  name?: string;
+  id?: string;
 }
 
 async function getArtistIds(artistNames: string[], access_token: string) {
@@ -43,7 +56,73 @@ async function getAlbumsByArtistId(artistId: string, access_token: string) {
       },
     },
   );
-  return response.json();
+  const albumsResponse = await response.json();
+
+  const artistResponse = await fetch(
+    `https://api.spotify.com/v1/artists/${artistId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    },
+  );
+  const artistData = await artistResponse.json();
+
+  const albumsWithGenresAndUrls = albumsResponse.items.map(
+    async (album: Album) => {
+      try {
+        if (!album.images || album.images.length === 0) {
+          throw new Error('Album cover images are missing.');
+        }
+
+        const image = album.images[0].url;
+        const palette = await Vibrant.from(image).getPalette();
+
+        const colors = {
+          vibrant: palette.Vibrant?.hex || '',
+          lightVibrant: palette.LightVibrant?.hex || '',
+          darkVibrant: palette.DarkVibrant?.hex || '',
+          muted: palette.Muted?.hex || '',
+          lightMuted: palette.LightMuted?.hex || '',
+        };
+
+        const albumUrl = album.external_urls?.spotify;
+
+        const appleMusicResponse = await fetch(
+          `https://itunes.apple.com/search?term=${encodeURIComponent(
+            album.name ?? '',
+          )} ${encodeURIComponent(artistData.name)}&entity=album&limit=1`,
+        );
+
+        const appleMusicData = await appleMusicResponse.json();
+
+        const appleMusicUrl =
+          appleMusicData.results?.[0]?.collectionViewUrl || '';
+
+        const albumEntry: Album = {
+          album_title: album.name ?? '',
+          album_id: album.id ?? '',
+          cover_image: album.images[0]?.url || '',
+          release_date: album.release_date,
+          palettes: Object.values(colors),
+          genres: artistData.genres?.slice(0, 3) || [],
+          album_url: albumUrl || '',
+          apple_music_url: appleMusicUrl,
+        };
+
+        return albumEntry;
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          const errorMessage = error.message;
+          console.error(
+            `Error generating color palette for album ${album.id}: ${errorMessage}`,
+          );
+        }
+      }
+    },
+  );
+
+  return Promise.all(albumsWithGenresAndUrls);
 }
 
 export async function POST(request: Request) {
@@ -63,40 +142,8 @@ export async function POST(request: Request) {
       for (const artistId of artistIds) {
         const albums = await getAlbumsByArtistId(artistId, access_token);
 
-        for (const album of albums.items) {
-          try {
-            if (!album.images || album.images.length === 0) {
-              throw new Error('Album cover images are missing.');
-            }
-
-            const image = album.images[0].url;
-            const palette = await Vibrant.from(image).getPalette();
-
-            const colors = {
-              vibrant: palette.Vibrant?.hex || '',
-              lightVibrant: palette.LightVibrant?.hex || '',
-              darkVibrant: palette.DarkVibrant?.hex || '',
-              muted: palette.Muted?.hex || '',
-              lightMuted: palette.LightMuted?.hex || '',
-            };
-
-            const albumEntry: Album = {
-              album_title: album.name,
-              album_id: album.id,
-              cover_image: album.images[0]?.url || '',
-              release_date: album.release_date,
-              palettes: Object.values(colors),
-            };
-
-            allAlbums.push(albumEntry);
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              const errorMessage = error.message;
-              console.error(
-                `Error generating color palette for album ${album.id}: ${errorMessage}`,
-              );
-            }
-          }
+        for (const album of albums) {
+          allAlbums.push(album);
         }
       }
 
@@ -115,10 +162,7 @@ export async function POST(request: Request) {
       console.error('Error upserting data to Supabase:', error);
     }
 
-    return NextResponse.json(
-      {message: 'Data upserted successfully'},
-      {status: 200},
-    );
+    return NextResponse.json({data: allArtistsData}, {status: 200});
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json(
