@@ -162,7 +162,10 @@ export async function POST(request: Request) {
       console.error('Error upserting data to Supabase:', error);
     }
 
-    return NextResponse.json({data: allArtistsData}, {status: 200});
+    return NextResponse.json(
+      {message: 'Data upserted successfully'},
+      {status: 200},
+    );
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json(
