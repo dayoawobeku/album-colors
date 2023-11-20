@@ -24,7 +24,7 @@ export default async function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center max-w-sm mx-auto">
-      <ArtistForm />
+      <ArtistForm data={data || []} />
 
       <section className="mt-10 w-full">
         <h3 className="text-xl text-grey font-bold">

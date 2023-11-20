@@ -100,14 +100,17 @@ async function getAlbumsByArtistId(artistId: string, access_token: string) {
           appleMusicData.results?.[0]?.collectionViewUrl || '';
 
         const albumEntry: Album = {
-          album_title: album.name ?? '',
-          album_id: album.id ?? '',
-          cover_image: album.images[0]?.url || '',
-          release_date: album.release_date,
-          palettes: Object.values(colors),
+          album_title: album.name || '',
+          album_id: album.id || '',
+          cover_image:
+            album.images && album.images.length > 0
+              ? album.images[0].url || ''
+              : '',
+          release_date: album.release_date || '',
+          palettes: Object.values(colors) || [],
           genres: artistData.genres?.slice(0, 3) || [],
           album_url: albumUrl || '',
-          apple_music_url: appleMusicUrl,
+          apple_music_url: appleMusicUrl || '',
         };
 
         return albumEntry;

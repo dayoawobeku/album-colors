@@ -11,6 +11,11 @@ interface OptionType {
   value: string;
 }
 
+interface Artist {
+  id: string;
+  name: string;
+}
+
 enum LoadingState {
   Idle = 'Idle',
   Updating = 'Updating',
@@ -18,7 +23,7 @@ enum LoadingState {
   Failed = 'Failed',
 }
 
-function ArtistForm() {
+function ArtistForm({data}: {data: Artist[]}) {
   const router = useRouter();
   const [currentArtistName, setCurrentArtistName] = useState('');
   const [artistNames, setArtistNames] = useState<string[]>([]);
@@ -29,6 +34,25 @@ function ArtistForm() {
   const handleSubmit = async (e: {preventDefault: () => void}) => {
     e.preventDefault();
     setLoadingState(LoadingState.Updating);
+
+    const trimmedCurrentArtistName = artistNames.map(name =>
+      name.trim().toLowerCase(),
+    );
+
+    const isDuplicate = data.some(
+      artist =>
+        trimmedCurrentArtistName.indexOf(artist.name.toLowerCase()) !== -1,
+    );
+
+    const duplicateArtist = artistNames.find(
+      name => trimmedCurrentArtistName.indexOf(name.toLowerCase()) !== -1,
+    );
+
+    if (isDuplicate) {
+      setLoadingState(LoadingState.Idle);
+      toast.error(`Artist ${duplicateArtist} already exists.`);
+      return;
+    }
 
     try {
       const namesArray = artistNames.map(name => name.trim());
