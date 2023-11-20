@@ -68,8 +68,8 @@ async function getAlbumsByArtistId(artistId: string, access_token: string) {
   );
   const artistData = await artistResponse.json();
 
-  const albumsWithGenresAndUrls = albumsResponse.items.map(
-    async (album: Album) => {
+  const albumsWithGenresAndUrls = await Promise.all(
+    albumsResponse.items.map(async (album: Album) => {
       try {
         if (!album.images || album.images.length === 0) {
           throw new Error('Album cover images are missing.');
@@ -120,12 +120,18 @@ async function getAlbumsByArtistId(artistId: string, access_token: string) {
           console.error(
             `Error generating color palette for album ${album.id}: ${errorMessage}`,
           );
+          return null;
         }
+        return null;
       }
-    },
+    }),
   );
 
-  return Promise.all(albumsWithGenresAndUrls);
+  const validAlbumsWithGenresAndUrls = albumsWithGenresAndUrls.filter(
+    album => album !== null,
+  );
+
+  return Promise.all(validAlbumsWithGenresAndUrls);
 }
 
 export async function POST(request: Request) {
